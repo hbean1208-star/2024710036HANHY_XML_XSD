@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XSD: 보건의학 학술논문 메타데이터 Application Profile
+  작성자: 한혜영
+
+  설계 의도:
+  본 스키마는 Dublin Core와 JATS의 요소 의미(semantics)를 참고하여
+  보건의학 학술논문 메타데이터를 기술하기 위한 자체 Application Profile로 설계하였다.
+  외부 Dublin Core 및 JATS XSD를 직접 import하지 않고, 각 표준 요소의 의미를 반영한
+  자체 요소로 구현하였다.
+   
+  또한 보건의학 연구의 활용성을 높이기 위하여 연구설계(studyDesign),
+  연구대상(population), 중재(intervention), 결과(outcome), 질환(medicalCondition),
+  소속기관(affiliation) 요소를 추가하였다.
+  
+  AI 도구사용:
+  스키마의 작성은 ChatGPT를 활용하여 초안을 작성하였다.
+  본인은 데이터 사전을 기반으로 메타데이터 요소를 직접 선정하고 요소의 정의와 구조를 검토하여 수정하였다.
+  요소의 순서와 필수 선택의 여부, 반복가능 여부, 통제어휘 등도 직접 결정하였다.
+  ChatGPT를 활용해서 코드를 수정하고 유효성 검사를 수행했다.
+  최종 스키마의 설계와 내용에 대한 책임은 작성자에게 있음을 밝힌다.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://example.org/medical-article-ap"
+           targetNamespace="http://example.org/medical-article-ap"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+  <xs:annotation>
+    <xs:documentation>
+      이 XML Schema는 보건의학 학술논문 메타데이터 레코드를 기술하기 위한
+      자체 Application Profile이다. Dublin Core와 JATS 외부 스키마를 직접 참조하지 않고,
+      두 표준의 요소 의미를 참고하여 자체 네임스페이스 기반 요소로 구현하였다.
+      기본 서지정보, 학술논문 정보, 연구 활용 정보가 하나의 논문 레코드 안에서
+      일관되게 기술되도록 설계하였다.
+    </xs:documentation>
+  </xs:annotation>
+
+  <!--
+    설계 의도:
+    article-type은 논문의 출판유형을 구분하는 필수 요소이므로 통제어휘로 제한하였다.
+    다양한 자유 입력을 허용하면 동일한 유형이 여러 방식으로 기록될 수 있으므로
+    xs:enumeration을 사용하여 허용 값을 명확히 하였다.
+  -->
+  <xs:simpleType name="articleTypeType">
+    <xs:annotation>
+      <xs:documentation>
+        논문의 출판유형을 제한하기 위한 통제어휘이다.
+        보건의학 학술지에서 자주 사용되는 논문유형을 중심으로 값을 구성하였다.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Original Article"/>
+      <xs:enumeration value="Review Article"/>
+      <xs:enumeration value="Case Report"/>
+      <xs:enumeration value="Editorial"/>
+      <xs:enumeration value="Comment"/>
+      <xs:enumeration value="Letter"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--
+    설계 의도:
+    studyDesign은 연구방법론을 나타내는 요소이므로 통제어휘로 제한하였다.
+  -->
+  <xs:simpleType name="studyDesignType">
+    <xs:annotation>
+      <xs:documentation>
+        연구설계 또는 연구방법을 제한하기 위한 통제어휘이다.
+        의학 연구 검색과 활용에서 연구방법론을 구분할 수 있도록 주요 연구설계 유형을 포함하였다.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Randomized Controlled Trial"/>
+      <xs:enumeration value="Cohort Study"/>
+      <xs:enumeration value="Case-Control Study"/>
+      <xs:enumeration value="Cross-Sectional Study"/>
+      <xs:enumeration value="Observational Study"/>
+      <xs:enumeration value="Systematic Review"/>
+      <xs:enumeration value="Meta-Analysis"/>
+      <xs:enumeration value="Scoping Review"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--
+    설계 의도:
+    필수 요소가 빈 문자열로 입력되는 것을 방지하기 위하여
+    최소 길이 1 이상의 텍스트 타입을 별도로 정의하였다.
+  -->
+  <xs:simpleType name="nonEmptyTextType">
+    <xs:annotation>
+      <xs:documentation>
+        최소 한 글자 이상의 텍스트를 요구하는 자료형이다.
+        필수 기술요소가 빈 값으로 입력되는 것을 방지하기 위해 사용하였다.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--
+    설계 의도:
+    본 Application Profile에서는 dc:identifier의 의미를 참고하되,
+    식별자를 DOI로 한정하였다. DOI의 기본 형식인 10.으로 시작하고
+    슬래시(/)를 포함하는 구조를 xs:pattern으로 제한하였다.
+  -->
+  <xs:simpleType name="doiType">
+    <xs:annotation>
+      <xs:documentation>
+        논문의 DOI를 기술하기 위한 자료형이다.
+        DOI가 10.으로 시작하고 슬래시(/)를 포함하는 기본 형식을 갖도록 패턴 제약을 설정하였다.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="10\.[^\s]+/[^\s]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--
+    설계 의도:
+    하나의 XML 문서가 보건의학 학술논문 한 편의 메타데이터 레코드를 표현하도록
+    medicalArticleRecord를 루트 요소로 정의하였다. 요소 순서는 데이터 사전의 구조를 반영하여
+    기본 서지정보, 논문 내용 정보, 연구 활용 정보 순으로 배치하였다.
+  -->
+  <xs:element name="medicalArticleRecord">
+    <xs:annotation>
+      <xs:documentation>
+        보건의학 학술논문 한 편에 대한 메타데이터 레코드를 담는 루트 요소이다.
+        필수 서지정보를 먼저 배치하고, 초록, 키워드, 인용정보, 연구설계,
+        연구대상, 중재, 결과, 질환, 소속기관 등의 선택요소를 이어서 배치하였다.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+
+        <!--
+          설계 의도:
+          Dublin Core의 dc:title 요소 의미를 참고하여 논문의 공식 제목을 기술하기 위해 정의하였다.
+          외부 Dublin Core 스키마를 직접 참조하지 않고 Application Profile 내 자체 요소로 구현하였다.
+        -->
+        <xs:element name="title" type="nonEmptyTextType">
+          <xs:annotation>
+            <xs:documentation>
+              dc:title의 의미를 참고한 요소이다. 논문의 공식 제목을 기술한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          Dublin Core의 dc:creator 요소 의미를 참고하여 논문 작성 책임이 있는
+          저자, 단체저자 또는 연구기관을 기술하기 위해 정의하였다.
+          공동저자 또는 단체저자를 표현할 수 있도록 반복 가능하게 설정하였다.
+        -->
+        <xs:element name="creator" type="nonEmptyTextType" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              dc:creator의 의미를 참고한 요소이다. 논문의 저자, 단체저자 또는 연구기관을 기술한다.
+              저자가 복수인 경우 반복하여 기록할 수 있다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          JATS의 journal-title 요소 의미를 참고하여 논문이 게재된 학술지명을 기술하기 위해 정의하였다.
+          논문 식별과 인용에 필수적인 정보이므로 필수 요소로 설정하였다.
+        -->
+        <xs:element name="journal-title" type="nonEmptyTextType">
+          <xs:annotation>
+            <xs:documentation>
+              JATS journal-title의 의미를 참고한 요소이다. 논문이 게재된 학술지명 또는 학술지 약어명을 기술한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          JATS의 pub-date 요소 의미를 참고하여 논문의 발행연도 또는 발행일을 기술하기 위해 정의하였다.
+          PubMed와 학술지 레코드에서 연도 단위 정보가 안정적으로 제공되므로 문자열 타입으로 처리하였다.
+        -->
+        <xs:element name="pub-date" type="nonEmptyTextType">
+          <xs:annotation>
+            <xs:documentation>
+              JATS pub-date의 의미를 참고한 요소이다. 논문의 발행연도 또는 발행일을 기술한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          JATS의 article-type 요소 의미를 참고하여 논문의 출판유형을 기술하기 위해 정의하였다.
+          논문 유형은 레코드 해석에 중요하므로 필수 요소로 설정하고 통제어휘를 적용하였다.
+        -->
+        <xs:element name="article-type" type="articleTypeType">
+          <xs:annotation>
+            <xs:documentation>
+              JATS article-type의 의미를 참고한 요소이다. 논문의 출판유형을 통제어휘 중 하나로 기술한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          Dublin Core의 dc:identifier 요소 의미를 참고하여 논문의 지속 식별자를 기술하기 위해 정의하였다.
+          본 스키마에서는 DOI를 필수 식별자로 사용하므로 DOI 형식 제약을 적용하였다.
+        -->
+        <xs:element name="identifier" type="doiType">
+          <xs:annotation>
+            <xs:documentation>
+              dc:identifier의 의미를 참고한 요소이다. 논문의 지속 식별자를 기술하며,
+              본 Application Profile에서는 DOI를 사용한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          JATS의 abstract 요소 의미를 참고하여 논문의 초록 또는 요약문을 기술하기 위해 정의하였다.
+          일부 레코드는 초록이 없을 수 있으므로 선택 요소로 설정하였다.
+        -->
+        <xs:element name="abstract" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              JATS abstract의 의미를 참고한 요소이다. 논문의 초록 또는 요약문을 기술한다.
+              가능한 경우 배경, 방법, 결과, 결론의 핵심 내용을 포함한다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          JATS의 kwd 요소 의미를 참고하여 논문의 주요 키워드 또는 주제어를 기술하기 위해 정의하였다.
+          한 논문에 여러 키워드가 있을 수 있으므로 반복 가능하게 설정하였다.
+        -->
+        <xs:element name="kwd" type="nonEmptyTextType" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              JATS kwd의 의미를 참고한 요소이다. 논문의 주요 주제를 나타내는 키워드 또는 주제어를 기술한다.
+              필요에 따라 MeSH 형식의 주제어를 사용할 수 있으며, 여러 개의 키워드를 반복 기록할 수 있다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          citation은 DC나 JATS의 직접 요소로 사용하지 않고, 이용자에게 완성된 참고문헌 형식의
+          인용정보를 제공하기 위해 자체 요소로 추가하였다.
+        -->
+        <xs:element name="citation" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:citation. 논문의 참고문헌 형식 인용정보를 기술한다.
+              이용자가 논문을 빠르게 확인하고 재사용할 수 있도록 하기 위해 추가하였다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          studyDesign은 보건의학 연구의 방법론적 특성을 검색하고 활용하기 위해 추가한 자체 요소이다.
+          연구설계 값의 일관성을 확보하기 위해 통제어휘를 적용하였다.
+        -->
+        <xs:element name="studyDesign" type="studyDesignType" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:studyDesign. 연구설계 또는 연구방법을 통제어휘 중 하나로 기술한다.
+              의학 연구의 근거수준과 연구방법을 파악하는 데 활용된다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          population은 PICO 관점에서 연구대상 집단을 표현하기 위해 추가한 자체 요소이다.
+          단순 연령뿐 아니라 질환, 포함조건, 대상자 특성을 함께 기술할 수 있도록 문자열로 정의하였다.
+        -->
+        <xs:element name="population" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:population. 연구대상 또는 참여자 집단을 기술한다.
+              질환, 연령대, 포함조건 등 연구대상 특성을 함께 기록할 수 있다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          intervention은 PICO 관점에서 연구의 중재, 치료, 노출 또는 절차를 표현하기 위해 추가한 자체 요소이다.
+        -->
+        <xs:element name="intervention" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:intervention. 연구에서 검토한 주요 중재, 치료, 노출 또는 절차를 기술한다.
+              중재가 없는 연구의 경우 "Not Applicable"로 기록할 수 있다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          outcome은 PICO 관점에서 연구의 주요 결과나 평가변수를 표현하기 위해 추가한 자체 요소이다.
+          의학 연구의 활용성을 높이기 위해 핵심 결과를 요약할 수 있도록 하였다.
+        -->
+        <xs:element name="outcome" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:outcome. 연구의 주요 결과, 평가변수 또는 핵심 발견을 기술한다.
+              예: 발생률, 사망률, 무진행생존기간, 전체생존기간 등
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          medicalCondition은 연구 대상 질환 또는 건강문제를 명확히 표현하기 위해 추가한 자체 요소이다.
+          질환명 기반 검색과 의학 주제 분류에 활용할 수 있다.
+        -->
+        <xs:element name="medicalCondition" type="xs:string" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              med:medicalCondition. 연구의 주요 대상 질환 또는 건강문제를 기술한다.
+              예: Childhood Cancer, Triple-Negative Breast Cancer 등
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <!--
+          설계 의도:
+          affiliation은 저자 또는 연구기관의 소속 정보를 기술하기 위해 추가한 자체 요소이다.
+          공동연구나 교신저자 소속처럼 복수 기관이 존재할 수 있으므로 반복 가능하게 설정하였다.
+        -->
+        <xs:element name="affiliation" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              med:affiliation. 저자 또는 연구기관의 소속기관 정보를 기술한다.
+              복수 기관이 있을 경우 반복하여 기록할 수 있다.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

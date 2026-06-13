@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<medicalArticleRecord
+    xmlns="http://example.org/medical-article-ap"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://example.org/medical-article-ap 2024710036HANHY_finalreport.xsd">
+
+  <title>Global burden of cancer in children and adolescents aged 0-19 years, 1990-2023: a systematic analysis for the Global Burden of Disease Study 2023</title>
+  <creator>GBD 2023 Childhood Cancer Collaborators</creator>
+  <journal-title>Lancet</journal-title>
+  <pub-date>2026</pub-date>
+  <article-type>Original Article</article-type>
+  <identifier>10.1016/S0140-6736(26)00200-X</identifier>
+  <abstract>Childhood cancer burden is an important issue for global cancer policy planning. Using data from the Global Burden of Disease Study 2023, this study estimated the global incidence, mortality, and disability-adjusted life-years (DALYs) of childhood cancer among individuals aged 0–19 years. In 2023, an estimated 377,000 new cases, 144,000 deaths, and 11.7 million DALYs were attributable to childhood cancer worldwide. Although global childhood cancer mortality decreased between 1990 and 2023, substantial disparities remained, particularly in resource-limited settings. The findings highlight the continuing global burden of childhood cancer and the need for improved diagnosis, treatment, and cancer control efforts aligned with WHO childhood cancer initiatives.</abstract>
+  <kwd>Neoplasms</kwd>
+  <kwd>Global Burden of Disease</kwd>
+  <kwd>Disability-Adjusted Life Years</kwd>
+  <kwd>Global Health</kwd>
+  <citation>Lancet. 2026 Apr 4;407(10536):1360-1373. doi: 10.1016/S0140-6736(26)00200-X.</citation>
+  <studyDesign>Observational Study</studyDesign>
+  <population>Children and adolescents aged 0–19 years</population>
+  <intervention>Not Applicable</intervention>
+  <outcome>Global incidence, mortality, and DALY burden of childhood cancer</outcome>
+  <medicalCondition>Childhood Cancer</medicalCondition>
+  <affiliation>Institute for Health Metrics and Evaluation, University of Washington</affiliation>
+  <affiliation>St. Jude Children's Research Hospital</affiliation>
+
+</medicalArticleRecord>
